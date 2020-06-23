@@ -33,6 +33,8 @@ namespace ycsbc {
         }
 
         ~Data_S(){
+            // 对于自定义类型的数组，当使用delete时，仅仅调用了对象数组中第一个对象的析构函数，而使用delete [ ]的话，将会逐个调用析构函数。
+            // 对简单的基本数据类型，delete a与delete []a一样的效果
             if(data_ != nullptr)  delete []data_;
         }
 
@@ -44,6 +46,7 @@ namespace ycsbc {
             return *(uint32_t *)data_;
         }
 
+        // 注意：返回的char* 没有结尾\0
         char *data(){
             if(data_ != nullptr) return data_ + sizeof(uint32_t);
             return nullptr;
@@ -51,6 +54,7 @@ namespace ycsbc {
 
     };
 
+    // dbfilename：数据库数据放置的路径
     HWDB::HWDB(const char *dbfilename, utils::Properties &props) :noResult(0){
     
         //set option
@@ -63,23 +67,26 @@ namespace ycsbc {
             exit(0);
         }
 
+        // 打印hwdb的内部参数
         PrintConfig(&config_);
     }
 
+    // 设置HWDB数据库的内部参数
+    // 这里会覆盖默认的参数
     void HWDB::SetOptions(const char *dbfilename, utils::Properties &props) {
         //
         SetDefaultHwdbConfig(&config_);
         strcpy(config_.fs_path, dbfilename);
-        config_.kLogMaxWriteSize = 32 * 1024 * 1024;  //
-        config_.kMaxPthreadNum = 8;
-        config_.kPthreadDoFlushJobNum = 5;
+        config_.kLogMaxWriteSize = 32 * 1024 * 1024;  // 每个日志大小是：32MB
+        config_.kMaxPthreadNum = 6;                   // 等于cpu核数      
+        config_.kPthreadDoFlushJobNum = 3;
         
         uint64_t nums = stoi(props.GetProperty(CoreWorkload::RECORD_COUNT_PROPERTY));
         uint32_t key_len = stoi(props.GetProperty(CoreWorkload::KEY_LENGTH));
         uint32_t value_len = stoi(props.GetProperty(CoreWorkload::FIELD_LENGTH_PROPERTY));
 
-        uint32_t inner_size = 512;
-        uint32_t leaf_size = 4096;
+        uint32_t inner_size = 512;       // 中间节点块大小
+        uint32_t leaf_size = 4096;       // 叶子节点块大小
 
         config_.kInnerBlockSize = inner_size;
         config_.kInnerCacheItemSize = inner_size;
@@ -99,10 +106,9 @@ namespace ycsbc {
 
         config_.kPlogClientType = 3;
         config_.kLogDirectWrite = 0;
-    
     }
 
-
+    // 简单的查询操作
     int HWDB::Read(const std::string &table, const std::string &key, const std::vector<std::string> *fields,
                       std::vector<KVPair> &result) {
         Data_S find_key(key);
@@ -162,6 +168,7 @@ namespace ycsbc {
         return DB::kOK;
     }
 
+    // put操作
     int HWDB::Insert(const std::string &table, const std::string &key,
                         std::vector<KVPair> &values){
         int s;
@@ -181,6 +188,7 @@ namespace ycsbc {
         return DB::kOK;
     }
 
+    // 和Insert一样，put操作
     int HWDB::Update(const std::string &table, const std::string &key, std::vector<KVPair> &values) {
         return Insert(table,key,values);
     }
@@ -209,6 +217,7 @@ namespace ycsbc {
         DeleteHwdb(&db_);
     }
 
+    // 将kvs中的所有key-value序列化成一个字符串。
     void HWDB::SerializeValues(std::vector<KVPair> &kvs, std::string &value) {
         value.clear();
         PutFixed64(&value, kvs.size());
@@ -220,6 +229,7 @@ namespace ycsbc {
         }
     }
 
+    // 解码序列化
     void HWDB::DeSerializeValues(std::string &value, std::vector<KVPair> &kvs){
         uint64_t offset = 0;
         uint64_t kv_num = 0;

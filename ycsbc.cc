@@ -266,6 +266,22 @@ int main( const int argc, const char *argv[]) {
   return 0;
 }
 
+/**
+ * 参数解释
+ * -threads n：使用n个线程执行（默认值：1）
+ * -db dbname: 指定要使用的数据库名称（默认值：basic）
+ * -P propertyfile：从给定文件加载参数属性（有一定的格式，可以使用#进行行注释，使用=号连接属性名和值）。 可以指定多个文件，并将按照指定的顺序进行处理
+ * -host ip：指定ip地址
+ * -port port：指定port端口
+ * -slaves：
+ * -dbpath path：指定数据库加载的路径，默认为: ""
+ * -load：bool, 默认为false
+ * -run：bool, 默认为false
+ * -dboption：默认为0
+ * -dbstatistics：bool, 默认为false，是否打印hwdb内部的统计参数。
+ * -dbwaitforbalance：bool, 默认为false
+ * -morerun：默认为: ""
+ **/
 string ParseCommandLine(int argc, const char *argv[], utils::Properties &props) {
   int argindex = 1;
   string filename;
@@ -409,6 +425,7 @@ inline bool StrStartWith(const char *str, const char *pre) {
   return strncmp(str, pre, strlen(pre)) == 0;
 }
 
+// 设置默认参数
 void Init(utils::Properties &props){
   props.SetProperty("dbname","basic");
   props.SetProperty("dbpath","");
@@ -421,6 +438,7 @@ void Init(utils::Properties &props){
   props.SetProperty("morerun","");
 }
 
+// 打印命令行参数列表
 void PrintInfo(utils::Properties &props) {
   printf("---- dbname:%s  dbpath:%s ----\n", props["dbname"].c_str(), props["dbpath"].c_str());
   printf("%s", props.DebugString().c_str());

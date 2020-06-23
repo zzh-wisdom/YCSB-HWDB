@@ -9,6 +9,7 @@ keylength=16
 fieldcount=1
 fieldlength=16
 
+# 共3.2GB
 recordcount=100000000
 operationcount=10000000
 workload=com.yahoo.ycsb.workloads.CoreWorkload

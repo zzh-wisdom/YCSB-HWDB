@@ -2,7 +2,7 @@
 
 #workload="workloads/test_workloada.spec"
 zipfian_workload="workloads/test_zipfian_load.spec"
-dbpath="/home/lzw/ceshi"
+dbpath="/tmp/rocksdb-test"
 moreworkloads="workloads/test_workloada.spec:workloads/test_workloadb.spec:workloads/test_workloadc.spec:workloads/test_workloadd.spec:workloads/test_workloade.spec:workloads/test_workloadf.spec"
 
 #./ycsbc -db rocksdb -dbpath $dbpath -threads 4 -P $workload -load true -run true -dbstatistics true

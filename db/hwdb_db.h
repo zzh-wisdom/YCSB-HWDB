@@ -54,7 +54,7 @@ namespace ycsbc {
     private:
         HWDB_OBJ *db_;
         HwdbConfig config_;
-        unsigned noResult;
+        unsigned noResult;    // 查找不到的操作次数
 
         void SetOptions(const char *dbfilename, utils::Properties &props);
         void SerializeValues(std::vector<KVPair> &kvs, std::string &value);
